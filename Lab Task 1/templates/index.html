@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Scraper</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        input { width: 350px; padding: 8px; }
+        button { padding: 8px 15px; }
+    </style>
+</head>
+<body>
+
+<h2>Email Scraper (Flask)</h2>
+
+<form method="POST">
+    <input type="text" name="url" placeholder="Enter website URL" required>
+    <button type="submit">Scrape Emails</button>
+</form>
+
+{% if emails %}
+    <h3>Emails Found:</h3>
+    <ul>
+        {% for email in emails %}
+            <li>{{ email }}</li>
+        {% endfor %}
+    </ul>
+    <p><b>Total Emails:</b> {{ emails|length }}</p>
+{% endif %}
+
+</body>
+</html>
