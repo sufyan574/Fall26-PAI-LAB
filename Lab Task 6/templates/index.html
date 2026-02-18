@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Video Object Counter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">AI Video Object Counter</a>
+      </div>
+    </nav>
+
+    <main class="container my-4">
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Upload Video</h5>
+              <p class="card-text">Upload a video and the server will detect and count moving objects crossing a horizontal line. Use drag & drop or the file picker below.</p>
+
+              <div id="dropzone" class="border rounded p-4 text-center mb-3">
+                <div class="mb-2">
+                  <i class="bi bi-cloud-arrow-up display-4 text-primary"></i>
+                </div>
+                <div class="mb-2 fw-medium">Drag & drop a video here</div>
+                <div class="text-muted small">or click to browse • MP4, WEBM, OGG</div>
+                <input id="video" name="video" type="file" accept="video/*" class="d-none">
+              </div>
+
+              <div id="preview-card" class="card mb-3 d-none">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-2 text-muted">Preview</h6>
+                  <video id="preview" class="w-100" controls></video>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="progress" style="height: 18px;">
+                  <div id="upload-progress" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+                </div>
+                <div id="status-text" class="mt-2 text-muted small"></div>
+              </div>
+
+              <div class="d-flex">
+                <button id="upload-btn" class="btn btn-primary me-2" type="button" disabled>Upload & Process</button>
+                <button id="clear-btn" class="btn btn-outline-secondary" type="button">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <h6>Tips</h6>
+            <ul>
+              <li>Use short videos for quick processing.</li>
+              <li>Adjust sensitivity in <code>process_video()</code> if needed.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card shadow-sm mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Processed Examples</h5>
+              <p class="card-text">Previously processed videos are listed here for quick preview.</p>
+              <div class="row" id="examples">
+                {% if outputs %}
+                  {% for v in outputs %}
+                    <div class="col-12 mb-3">
+                      <video width="100%" controls>
+                        <source src="/{{ v }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="col-12 text-muted">No processed videos yet.</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="text-center py-3">
+      <small class="text-muted">Built with Flask and OpenCV</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+  </body>
+</html>
