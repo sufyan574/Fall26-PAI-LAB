@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quick Recipe Finder</title>
+  <style>
+    :root {
+      --primary: #e74c3c;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--light);
+      color: var(--dark);
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary);
+    }
+    .search-box {
+      max-width: 500px;
+      margin: 0 auto 30px;
+      display: flex;
+      gap: 10px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 1.1rem;
+      border: 2px solid #bdc3c7;
+      border-radius: 6px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
+
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      transition: transform 0.15s;
+    }
+    .card:hover { transform: translateY(-6px); }
+
+    .card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 18px;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 1.4rem;
+    }
+
+    .meta {
+      color: #7f8c8d;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    .ingredients {
+      margin: 16px 0;
+      padding-left: 20px;
+    }
+
+    .instructions {
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .loading { text-align: center; font-size: 1.3rem; color: #95a5a6; }
+    .error   { color: #c0392b; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1>🍳 Quick Recipe Finder</h1>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="e.g. chicken, pasta, beef..." />
+  <button onclick="doSearch()">Search</button>
+</div>
+
+<div id="results"></div>
+
+<script>
+const resultsDiv = document.getElementById("results");
+
+function showLoading() {
+  resultsDiv.innerHTML = '<p class="loading">Finding tasty recipes...</p>';
+}
+
+function showError(msg) {
+  resultsDiv.innerHTML = `<p class="error">${msg}</p>`;
+}
+
+function renderMeal(meal) {
+  if (!meal) return "";
+
+  let ingredients = [];
+  for (let i = 1; i <= 20; i++) {
+    const ing = meal[`strIngredient${i}`]?.trim();
+    const mea = meal[`strMeasure${i}`]?.trim();
+    if (ing && ing !== "" && ing.toLowerCase() !== "null") {
+      ingredients.push(`${mea ? mea + " " : ""}${ing}`);
+    }
+  }
+
+  return `
+    <div class="card">
+      <img src="${meal.strMealThumb}" alt="${meal.strMeal}">
+      <div class="card-content">
+        <h3>${meal.strMeal}</h3>
+        <div class="meta">
+          ${meal.strCategory || "?"} • ${meal.strArea || "Worldwide"}
+        </div>
+        <h4>Ingredients:</h4>
+        <ul class="ingredients">
+          ${ingredients.map(it => `<li>${it}</li>`).join("")}
+        </ul>
+        <h4>Instructions:</h4>
+        <p class="instructions">${meal.strInstructions || "No instructions available."}</p>
+        ${meal.strYoutube ? `<p><a href="${meal.strYoutube}" target="_blank">📺 Watch on YouTube</a></p>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+async function loadRandom() {
+  showLoading();
+  try {
+    const r = await fetch("/api/random");
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    const meal = data.meals?.[0];
+    resultsDiv.innerHTML = meal ? renderMeal(meal) : "<p>No recipe found</p>";
+  } catch {
+    showError("Could not load a random recipe right now.");
+  }
+}
+
+async function doSearch() {
+  const q = document.getElementById("searchInput").value.trim();
+  if (!q) {
+    alert("Please enter something to search for 😄");
+    return;
+  }
+
+  showLoading();
+
+  try {
+    const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+
+    if (!data.meals || data.meals.length === 0) {
+      resultsDiv.innerHTML = `<p class="loading">No recipes found for "${q}"</p>`;
+      return;
+    }
+
+    resultsDiv.innerHTML = data.meals.map(renderMeal).join("");
+  } catch {
+    showError("Something went wrong while searching. Try again later.");
+  }
+}
+
+// Load a random recipe when page opens
+window.onload = loadRandom;
+</script>
+
+</body>
+</html>
