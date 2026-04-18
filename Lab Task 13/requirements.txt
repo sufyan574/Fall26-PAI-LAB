@@ -1,0 +1,6 @@
+Flask
+python-dotenv
+groq
+Werkzeug
+gunicorn  # optional for production
+fpdf2
